@@ -1,7 +1,6 @@
+use crate::domain::models::User;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-use crate::domain::models::User;
 
 // User registration with email and password
 #[derive(Debug, Deserialize)]

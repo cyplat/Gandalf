@@ -6,9 +6,9 @@ use crate::domain::errors::UserError;
 use crate::domain::models::AuthProvider;
 use crate::domain::services::UserService;
 
-use crate::app_modules::auth::PasswordHasher;
-use crate::app_modules::auth::auth_strategies::AuthStrategy;
+use crate::app_modules::auth::strategies::AuthStrategy;
 use crate::domain::services::EmailService;
+use crate::utils::PasswordUtil;
 
 use std::sync::Arc;
 use tracing::error;
@@ -16,19 +16,19 @@ use tracing::error;
 pub struct EmailPasswordAuthStrategy {
     user_service: Arc<UserService>,
     email_service: Arc<EmailService>,
-    password_hasher: Arc<PasswordHasher>,
+    password_util: Arc<PasswordUtil>,
 }
 
 impl EmailPasswordAuthStrategy {
     pub fn new(
         user_service: Arc<UserService>,
         email_service: Arc<EmailService>,
-        password_hasher: Arc<PasswordHasher>,
+        password_util: Arc<PasswordUtil>,
     ) -> Self {
         Self {
             user_service,
             email_service,
-            password_hasher,
+            password_util,
         }
     }
 }
@@ -60,7 +60,7 @@ impl AuthStrategy for EmailPasswordAuthStrategy {
         // Hash password if provided
         if let Some(password) = &registration_data.password {
             new_user.password_hash =
-                Some(self.password_hasher.hash_password(password).map_err(|e| {
+                Some(self.password_util.hash_password(password).map_err(|e| {
                     error!("Password hashing failed: {}", e);
                     UserError::PasswordHashingError
                 })?);

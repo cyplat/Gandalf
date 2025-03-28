@@ -24,6 +24,7 @@ serde_json = "1.0.140"
 # Utility Types
 uuid = { version = "1.7", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
+argon2 = { version = "0.5.3", features = ["password-hash", "rand", "std"] }
 
 # Logging and Observability
 tracing = "0.1"
@@ -36,4 +37,3 @@ thiserror = "2.0.12"
 # Configuration
 dotenvy="0.15"
 validator = { version = "0.20.0", features = ["derive"] }
-anyhow = "1.0.97"

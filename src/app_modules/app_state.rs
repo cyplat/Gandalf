@@ -5,14 +5,14 @@ use crate::domain::services::AuthService;
 use crate::domain::services::EmailService;
 use crate::domain::services::UserService;
 
-use crate::app_modules::auth::{PasswordHasher, configure_auth_strategies};
+use crate::app_modules::auth::configure_auth_strategies;
+use crate::utils::PasswordUtil;
 
 // Configuration struct to hold application state
 pub struct AppState {
     db_pool: Arc<PgPool>,
     pub user_service: Arc<UserService>,
     pub auth_service: Arc<AuthService>,
-    // Add other services or configuration as needed
 }
 
 impl AppState {
@@ -25,7 +25,7 @@ impl AppState {
         let auth_strategies = configure_auth_strategies(
             Arc::clone(&user_service),
             Arc::clone(&email_service),
-            Arc::new(PasswordHasher::new()),
+            Arc::new(PasswordUtil::new()),
         );
 
         let auth_service = Arc::new(AuthService::new(auth_strategies));
