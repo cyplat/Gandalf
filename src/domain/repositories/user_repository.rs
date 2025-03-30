@@ -53,6 +53,32 @@ impl UserRepository {
 
         Ok(exists)
     }
+
+    pub async fn find_by_email(&self, email: &str) -> Result<Option<User>> {
+        let conn = self.base.get_conn().await?;
+
+        let query = "
+            SELECT 
+                id, external_id, username, email, password_hash, 
+                password_updated_at, password_reset_required, failed_login_attempts,
+                last_failed_attempt, account_locked_until, email_verified,
+                email_verification_token, email_verification_sent_at, created_at, updated_at, 
+                last_login_at, requires_mfa, auth_provider,user_state,
+                last_login_ip, last_user_agent, data_region, deletion_scheduled_at
+            FROM auth.users
+            WHERE email = $1
+        ";
+
+        let row = conn
+            .query_opt(query, &[&email])
+            .await
+            .map_err(UserError::DatabaseError)?;
+
+        match row {
+            Some(row) => Ok(Some(User::from_row(&row))),
+            None => Ok(None),
+        }
+    }
 }
 
 #[async_trait]

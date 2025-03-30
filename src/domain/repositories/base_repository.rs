@@ -31,9 +31,7 @@ impl BaseRepository {
     pub async fn get_conn(&self) -> Result<PgConn, UserError> {
         self.pool.get().await.map_err(|e| match e {
             RunError::User(err) => UserError::DatabaseError(err),
-            RunError::TimedOut => {
-                UserError::InternalError(anyhow::anyhow!("Database connection timed out"))
-            }
+            RunError::TimedOut => UserError::InternalError("Database connection timed out".into()),
         })
     }
 }

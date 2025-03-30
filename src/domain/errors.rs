@@ -24,7 +24,10 @@ pub enum UserError {
     DatabaseError(#[from] PgError),
 
     #[error("Internal error: {0}")]
-    InternalError(#[from] anyhow::Error),
+    InternalError(String),
+
+    #[error("Invalid credentials")]
+    InvalidCredentials,
 }
 
 impl From<ValidationErrors> for UserError {

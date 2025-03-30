@@ -1,3 +1,4 @@
+use crate::adapters::dtos::LoginRequestDto;
 use crate::adapters::dtos::RegisteredUserDto;
 use crate::adapters::dtos::RegistrationDto;
 use crate::domain::errors::UserError;
@@ -9,4 +10,6 @@ pub trait AuthStrategy {
         &self,
         registration_data: RegistrationDto,
     ) -> Result<RegisteredUserDto, UserError>;
+
+    async fn authenticate(&self, login_data: LoginRequestDto) -> Result<bool, UserError>;
 }

@@ -1,8 +1,14 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+// FIXME: The code above should only be used in development.
+
 mod adapters;
 mod app_modules;
 mod config;
 mod domain;
 mod server;
+mod utils;
 
 use std::net::TcpListener;
 
