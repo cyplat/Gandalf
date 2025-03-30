@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::app_modules::auth::strategies::{AuthStrategy, EmailPasswordAuthStrategy};
+use crate::domain::errors::UserError;
 use crate::domain::services::EmailService;
 use crate::domain::services::UserService;
 use crate::utils::PasswordUtil;
-use crate::app_modules::auth::strategies::{AuthStrategy, EmailPasswordAuthStrategy};
-use crate::domain::errors::UserError;
 
 // Authentication Methods Enum
 #[derive(Hash, Eq, PartialEq)]

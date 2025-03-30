@@ -37,3 +37,4 @@ thiserror = "2.0.12"
 # Configuration
 dotenvy="0.15"
 validator = { version = "0.20.0", features = ["derive"] }
+jsonwebtoken = "9.3.1"

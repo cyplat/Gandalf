@@ -25,6 +25,9 @@ pub enum UserError {
 
     #[error("Internal error: {0}")]
     InternalError(String),
+
+    #[error("Invalid credentials")]
+    InvalidCredentials,
 }
 
 impl From<ValidationErrors> for UserError {

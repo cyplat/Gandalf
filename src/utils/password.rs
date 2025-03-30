@@ -40,7 +40,7 @@ impl PasswordUtil {
     }
 
     /// Verifies a password against a stored hash
-    fn verify_password(&self, password: &str, hash: &str) -> Result<bool, PasswordError> {
+    pub async fn verify_password(&self, password: &str, hash: &str) -> Result<bool, PasswordError> {
         let parsed_hash =
             PasswordHash::new(hash).map_err(|_| PasswordError::PasswordVerificationError)?;
         Ok(self

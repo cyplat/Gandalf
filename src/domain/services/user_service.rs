@@ -37,6 +37,11 @@ impl UserService {
         user
     }
 
+    pub async fn get_user_by_email(&self, email: &str) -> Result<Option<User>> {
+        let user = self.user_repo.find_by_email(email).await?;
+        Ok(user)
+    }
+
     pub async fn user_exists(&self, email: &str) -> Result<bool> {
         let exists = self.user_repo.email_exists(email).await?;
         Ok(exists)

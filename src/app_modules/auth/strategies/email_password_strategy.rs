@@ -1,7 +1,9 @@
 // Email/Password Registration Strategy
 
+use crate::adapters::dtos::LoginRequestDto;
 use crate::adapters::dtos::RegisteredUserDto;
 use crate::adapters::dtos::RegistrationDto;
+use crate::app_modules::api::v1::auth_endpoints::login;
 use crate::domain::errors::UserError;
 use crate::domain::models::AuthProvider;
 use crate::domain::services::UserService;
@@ -35,6 +37,33 @@ impl EmailPasswordAuthStrategy {
 
 #[async_trait::async_trait]
 impl AuthStrategy for EmailPasswordAuthStrategy {
+    async fn authenticate(&self, login_data: LoginRequestDto) -> Result<bool, UserError> {
+        // Check if user exists
+        let user = self
+            .user_service
+            .get_user_by_email(&login_data.email)
+            .await?
+            .ok_or(UserError::InvalidCredentials)?;
+
+        // Verify password
+        if let (Some(hash), Some(password)) = (&user.password_hash, &login_data.password) {
+            let verified = self
+                .password_util
+                .verify_password(password, hash)
+                .await
+                .map_err(|e| {
+                    error!("Password verification failed: {}", e);
+                    UserError::InvalidCredentials
+                })?;
+
+            if !verified {
+                return Err(UserError::InvalidCredentials);
+            }
+        }
+
+        Ok(true)
+    }
+
     async fn register(
         &self,
         registration_data: RegistrationDto,
