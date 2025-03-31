@@ -14,6 +14,7 @@ use crate::utils::PasswordUtil;
 
 use std::sync::Arc;
 use tracing::error;
+use uuid::Uuid;
 
 pub struct EmailPasswordAuthStrategy {
     user_service: Arc<UserService>,
@@ -37,7 +38,7 @@ impl EmailPasswordAuthStrategy {
 
 #[async_trait::async_trait]
 impl AuthStrategy for EmailPasswordAuthStrategy {
-    async fn authenticate(&self, login_data: LoginRequestDto) -> Result<bool, UserError> {
+    async fn authenticate(&self, login_data: LoginRequestDto) -> Result<Uuid, UserError> {
         // Check if user exists
         let user = self
             .user_service
@@ -61,7 +62,7 @@ impl AuthStrategy for EmailPasswordAuthStrategy {
             }
         }
 
-        Ok(true)
+        Ok(user.id)
     }
 
     async fn register(

@@ -28,7 +28,7 @@ impl AppState {
             Arc::new(PasswordUtil::new()),
         );
 
-        let auth_service = Arc::new(AuthService::new(auth_strategies));
+        let auth_service = Arc::new(AuthService::new(auth_strategies, db_pool.clone()));
 
         AppState {
             db_pool,

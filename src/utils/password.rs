@@ -54,25 +54,47 @@ impl PasswordUtil {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use argon2::{PasswordHash, PasswordVerifier};
+    use tokio::test; // For async tests
 
-    #[test]
-    fn test_password_hashing() {
-        let password_util = PasswordUtil::new();
-        let password = "super_secure_password";
+    #[tokio::test]
+    async fn test_hash_password() {
+        let util = PasswordUtil::new();
+        let password = "secure_password";
 
-        let hash = password_util
-            .hash_password(password)
-            .expect("Failed to hash password");
+        let hash = util.hash_password(password);
+        assert!(hash.is_ok(), "Password hashing should succeed");
 
+        let hash = hash.unwrap();
         assert!(
-            password_util.verify_password(password, &hash).unwrap(),
-            "Password verification failed"
+            PasswordHash::new(&hash).is_ok(),
+            "Generated hash should be valid Argon2 format"
         );
+    }
+
+    #[tokio::test]
+    async fn test_verify_password_success() {
+        let util = PasswordUtil::new();
+        let password = "secure_password";
+        let hash = util.hash_password(password).expect("Hashing failed");
+
+        let result = util.verify_password(password, &hash).await;
+        assert!(result.is_ok(), "Verification should not return an error");
+        assert!(result.unwrap(), "Password should be verified successfully");
+    }
+
+    #[tokio::test]
+    async fn test_verify_password_failure() {
+        let util = PasswordUtil::new();
+        let password = "secure_password";
+        let wrong_password = "wrong_password";
+        let hash = util.hash_password(password).expect("Hashing failed");
+
+        let result = util.verify_password(wrong_password, &hash).await;
+        assert!(result.is_ok(), "Verification should not return an error");
         assert!(
-            !password_util
-                .verify_password("wrong_password", &hash)
-                .unwrap(),
-            "Verification should fail for incorrect passwords"
+            !result.unwrap(),
+            "Wrong password should not pass verification"
         );
     }
 }

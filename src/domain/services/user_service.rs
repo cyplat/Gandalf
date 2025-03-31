@@ -1,20 +1,20 @@
 use std::sync::Arc;
 use uuid::Uuid;
 
+use crate::adapters::repositories::{PgUserRepository, RepositoryTrait};
 use crate::config::database::PgPool;
 use crate::domain::errors::UserError;
 use crate::domain::models::User;
-use crate::domain::repositories::{RepositoryTrait, UserRepository};
 type Result<T> = std::result::Result<T, UserError>;
 
 pub struct UserService {
-    user_repo: UserRepository,
+    user_repo: PgUserRepository,
 }
 
 impl UserService {
     pub fn new(db_pool: Arc<PgPool>) -> Self {
         Self {
-            user_repo: UserRepository::new(db_pool),
+            user_repo: PgUserRepository::new(db_pool),
         }
     }
 

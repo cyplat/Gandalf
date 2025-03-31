@@ -8,6 +8,8 @@ use crate::adapters::dtos::LoginRequestDto;
 use crate::app_modules::api::v1::schemas::LoginRequestLocal;
 use crate::app_modules::app_state::AppState;
 use crate::app_modules::auth::AuthMethod;
+use crate::app_modules::auth::JwtClaims;
+use crate::domain::services::AuthService;
 use actix_web::{HttpResponse, Responder, get, post, web};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{EncodingKey, Header, encode};
@@ -49,9 +51,9 @@ pub async fn login(
         })
         .await
     {
-        Ok(_) => {
+        Ok(user_id) => {
             // Generate JWT Token
-            match generate_jwt(&login_request.email.clone()) {
+            match app_state.auth_service.create_session(user_id).await {
                 Ok(token) => HttpResponse::Ok().json(serde_json::json!({
                     "message": "Login successful",
                     "token": token
@@ -71,33 +73,4 @@ pub async fn login(
             }))
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-struct Claims {
-    sub: String, // Subject (User ID or Email)
-    exp: usize,  // Expiration Time
-    iat: usize,  // Issued At
-}
-
-/// Generates a JWT token with an expiration time.
-fn generate_jwt(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "mysecret".to_string());
-
-    let expiration = Utc::now()
-        .checked_add_signed(Duration::hours(24)) // Token valid for 24 hours
-        .expect("Invalid timestamp")
-        .timestamp() as usize;
-
-    let claims = Claims {
-        sub: email.to_owned(),
-        exp: expiration,
-        iat: Utc::now().timestamp() as usize,
-    };
-
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(secret.as_bytes()),
-    )
 }

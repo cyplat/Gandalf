@@ -15,11 +15,11 @@ use super::base_repository::{BaseRepository, PgPool, RepositoryTrait};
 type Result<T> = std::result::Result<T, UserError>;
 
 // Create User Repository
-pub struct UserRepository {
+pub struct PgUserRepository {
     base: BaseRepository,
 }
 
-impl UserRepository {
+impl PgUserRepository {
     pub fn new(pool: Arc<PgPool>) -> Self {
         Self {
             base: BaseRepository::new(pool),
@@ -82,7 +82,7 @@ impl UserRepository {
 }
 
 #[async_trait]
-impl RepositoryTrait<User, Uuid> for UserRepository {
+impl RepositoryTrait<User, Uuid> for PgUserRepository {
     async fn find_by_id(&self, id: Uuid) -> Result<Option<User>> {
         let conn = self.base.get_conn().await?;
 
