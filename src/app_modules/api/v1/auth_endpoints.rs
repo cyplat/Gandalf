@@ -54,7 +54,7 @@ pub async fn login(
     {
         Ok(user) => {
             // Generate JWT Token
-            match app_state.auth_service.create_session(user).await {
+            match app_state.auth_service.make_session(user).await {
                 Ok(token) => HttpResponse::Ok().json(serde_json::json!({
                     "message": "Login successful",
                     "token": token

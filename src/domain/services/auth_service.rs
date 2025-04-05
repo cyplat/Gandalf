@@ -3,7 +3,9 @@ use std::collections::HashSet;
 use std::hash::Hash;
 use std::sync::Arc;
 
-use crate::adapters::repositories::{PgSessionRepository, PgUserRepository, RepositoryTrait};
+use crate::adapters::repositories::{
+    PgSessionRepository, PgUserRepository, RepositoryTrait, SessionRepository,
+};
 use crate::app_modules::auth::{AuthMethod, AuthStrategy};
 use crate::config::database::PgPool;
 use uuid::Uuid;
@@ -13,6 +15,7 @@ use crate::app_modules::auth::error::{AuthError, Result};
 use crate::domain::models::Session;
 use crate::domain::models::User;
 use chrono::{Duration, Utc};
+use tracing::error;
 
 pub struct AuthService {
     session_repository: PgSessionRepository,
@@ -32,7 +35,9 @@ impl AuthService {
         }
     }
 
-    pub async fn create_session(&self, user: User) -> Result<String> {
+    pub async fn make_session(&self, user: User) -> Result<String> {
+        // Creates a new session for the user and generates a JWT token
+        // This function should be called after the user has been authenticated
         let expiration = Utc::now()
             .checked_add_signed(Duration::hours(24)) // Token valid for 24 hours
             .expect("Invalid timestamp")
@@ -55,13 +60,13 @@ impl AuthService {
         permissions.insert("test-tets".to_string(), channel_permissions);
 
         let session = Session {
-            session_id: new_session_id.clone(),
+            id: new_session_id.clone(),
             user_id: user.id,
             refresh_token_hash: "session refresh token ...".to_string(),
             device_identifier: None,
             device_name: None,
             device_type: None,
-            ip_address: None,
+            ip_address: "192.168.0.22".parse().expect("Invalid IP address"),
             user_agent: None,
             expires_at: now,
             created_at: now,
@@ -70,6 +75,14 @@ impl AuthService {
             revoked_reason: None,
             revoked_at: None,
         };
+
+        self.session_repository
+            .create_session(&session)
+            .await
+            .map_err(|e| {
+                error!("Failed to create session: {}", e);
+                AuthError::InternalError
+            })?;
 
         let token_claims = JwtClaims {
             sub: user.id.to_string(),         // User ID
