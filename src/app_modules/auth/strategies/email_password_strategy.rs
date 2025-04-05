@@ -9,6 +9,7 @@ use crate::domain::models::AuthProvider;
 use crate::domain::services::UserService;
 
 use crate::app_modules::auth::strategies::AuthStrategy;
+use crate::domain::models::User;
 use crate::domain::services::EmailService;
 use crate::utils::PasswordUtil;
 
@@ -38,7 +39,7 @@ impl EmailPasswordAuthStrategy {
 
 #[async_trait::async_trait]
 impl AuthStrategy for EmailPasswordAuthStrategy {
-    async fn authenticate(&self, login_data: LoginRequestDto) -> Result<Uuid, UserError> {
+    async fn authenticate(&self, login_data: LoginRequestDto) -> Result<User, UserError> {
         // Check if user exists
         let user = self
             .user_service
@@ -62,7 +63,7 @@ impl AuthStrategy for EmailPasswordAuthStrategy {
             }
         }
 
-        Ok(user.id)
+        Ok(user)
     }
 
     async fn register(

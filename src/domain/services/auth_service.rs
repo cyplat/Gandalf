@@ -11,6 +11,7 @@ use uuid::Uuid;
 use crate::app_modules::auth::JwtClaims;
 use crate::app_modules::auth::error::{AuthError, Result};
 use crate::domain::models::Session;
+use crate::domain::models::User;
 use chrono::{Duration, Utc};
 
 pub struct AuthService {
@@ -31,14 +32,7 @@ impl AuthService {
         }
     }
 
-    pub async fn create_session(&self, user_id: Uuid) -> Result<String> {
-        let user = self
-            .user_repository
-            .find_by_id(user_id)
-            .await
-            .map_err(|_| AuthError::InternalError)?
-            .expect("User should exists when creating session");
-
+    pub async fn create_session(&self, user: User) -> Result<String> {
         let expiration = Utc::now()
             .checked_add_signed(Duration::hours(24)) // Token valid for 24 hours
             .expect("Invalid timestamp")

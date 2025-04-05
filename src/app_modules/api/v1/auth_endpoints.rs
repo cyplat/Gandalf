@@ -9,6 +9,7 @@ use crate::app_modules::api::v1::schemas::LoginRequestLocal;
 use crate::app_modules::app_state::AppState;
 use crate::app_modules::auth::AuthMethod;
 use crate::app_modules::auth::JwtClaims;
+use crate::domain::models::User;
 use crate::domain::services::AuthService;
 use actix_web::{HttpResponse, Responder, get, post, web};
 use chrono::{Duration, Utc};
@@ -51,9 +52,9 @@ pub async fn login(
         })
         .await
     {
-        Ok(user_id) => {
+        Ok(user) => {
             // Generate JWT Token
-            match app_state.auth_service.create_session(user_id).await {
+            match app_state.auth_service.create_session(user).await {
                 Ok(token) => HttpResponse::Ok().json(serde_json::json!({
                     "message": "Login successful",
                     "token": token
