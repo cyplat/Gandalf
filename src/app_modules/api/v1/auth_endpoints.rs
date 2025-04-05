@@ -61,7 +61,8 @@ pub async fn login(
                 Err(err) => {
                     error!("JWT Generation failed: {:?}", err);
                     HttpResponse::InternalServerError().json(serde_json::json!({
-                        "error": "Failed to generate authentication token"
+                        "error": "Internal server error",
+                        "code": "INTERNAL_SERVER_ERROR"
                     }))
                 }
             }
@@ -69,7 +70,8 @@ pub async fn login(
         Err(err) => {
             error!("Login failed: {:?}", err);
             HttpResponse::Unauthorized().json(serde_json::json!({
-                "error": "Invalid email or password"
+                "error": "Invalid email or password",
+                "code": "INVALID_CREDENTIALS"
             }))
         }
     }
