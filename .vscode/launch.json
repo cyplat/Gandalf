@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Actix Web App",
+        "type": "lldb", // or "gdb" for GDB
+        "request": "launch",
+        "program": "${workspaceFolder}/target/debug/gandalf",
+        "args": [],
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "RUST_LOG": "debug"
+        },
+        "stopOnEntry": false
+      }
+    ]
+ }

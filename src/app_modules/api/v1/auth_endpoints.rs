@@ -11,7 +11,7 @@ use crate::app_modules::auth::AuthMethod;
 use crate::app_modules::auth::JwtClaims;
 use crate::domain::models::User;
 use crate::domain::services::AuthService;
-use actix_web::{HttpResponse, Responder, get, post, web};
+use actix_web::{HttpRequest, HttpResponse, Responder, get, post, web};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::Deserialize;
@@ -22,6 +22,7 @@ use tracing::{error, info};
 
 #[post("/login")]
 pub async fn login(
+    req: HttpRequest,
     app_state: web::Data<AppState>,
     login_request: web::Json<LoginRequestLocal>,
 ) -> impl Responder {
@@ -53,8 +54,9 @@ pub async fn login(
         .await
     {
         Ok(user) => {
+            info!("User authenticated: {:?}", user.id);
             // Generate JWT Token
-            match app_state.auth_service.make_session(user).await {
+            match app_state.auth_service.make_session(user, req).await {
                 Ok(token) => HttpResponse::Ok().json(serde_json::json!({
                     "message": "Login successful",
                     "token": token

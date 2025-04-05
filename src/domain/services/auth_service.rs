@@ -1,3 +1,4 @@
+use actix_web::HttpRequest;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -35,7 +36,7 @@ impl AuthService {
         }
     }
 
-    pub async fn make_session(&self, user: User) -> Result<String> {
+    pub async fn make_session(&self, user: User, req: HttpRequest) -> Result<String> {
         // Creates a new session for the user and generates a JWT token
         // This function should be called after the user has been authenticated
         let expiration = Utc::now()
@@ -43,8 +44,22 @@ impl AuthService {
             .expect("Invalid timestamp")
             .timestamp();
 
+        // Extract User-Agent header
+        let user_agent = req
+            .headers()
+            .get("User-Agent")
+            .and_then(|val| val.to_str().ok())
+            .unwrap_or("Unknown")
+            .to_string();
+
+        // Extract IP address from request
+        let ip_address = req
+            .connection_info()
+            .realip_remote_addr()
+            .unwrap_or("Unknown")
+            .to_string();
+
         let now = Utc::now();
-        let new_session_id = Uuid::new_v4();
 
         // FIXME: This should be removed and resource access gotten from the DB
         let mut channel_permissions = HashMap::new();
@@ -60,14 +75,14 @@ impl AuthService {
         permissions.insert("test-tets".to_string(), channel_permissions);
 
         let session = Session {
-            id: new_session_id.clone(),
+            id: Uuid::new_v4(),
             user_id: user.id,
             refresh_token_hash: "session refresh token ...".to_string(),
             device_identifier: None,
             device_name: None,
             device_type: None,
-            ip_address: "192.168.0.22".parse().expect("Invalid IP address"),
-            user_agent: None,
+            ip_address: ip_address.parse().expect("Invalid IP address"),
+            user_agent: Some(user_agent),
             expires_at: now,
             created_at: now,
             last_active_at: now,
@@ -76,7 +91,8 @@ impl AuthService {
             revoked_at: None,
         };
 
-        self.session_repository
+        let session_id = self
+            .session_repository
             .create_session(&session)
             .await
             .map_err(|e| {
@@ -89,7 +105,7 @@ impl AuthService {
             access_range: "user".to_string(), // Permissions/scope
             preferred_username: user.username.unwrap_or_default(),
             scope: "user".to_string(),
-            sid: new_session_id,               // Session ID
+            sid: session_id,                   // Session ID
             iss: "auth.teta.comm".to_string(), // Issuer (auth server)
             aud: "app.teta".to_string(),       // Audience (client app)
             exp: expiration,                   // Expiry time

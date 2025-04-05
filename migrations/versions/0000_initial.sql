@@ -70,7 +70,7 @@ CREATE TABLE auth.user_roles (
 
 -- Sessions for users (when not using JWT-only approach)
 CREATE TABLE auth.sessions (
-    session_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     refresh_token_hash VARCHAR(255) NOT NULL,
     device_identifier VARCHAR(255) NULL,
